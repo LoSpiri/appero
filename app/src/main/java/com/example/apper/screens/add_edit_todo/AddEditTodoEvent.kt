@@ -6,5 +6,6 @@ sealed class AddEditTodoEvent{
     data class OnDateChange(val date:String):AddEditTodoEvent()
     data class OnTimeChange(val time: String):AddEditTodoEvent()
     data class OnAlarmChange(val alarm: Boolean):AddEditTodoEvent()
+    data class OnCalendarSwitchChange(val calendar: Boolean):AddEditTodoEvent()
     object OnSaveTodoClick: AddEditTodoEvent()
 }

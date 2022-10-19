@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -13,12 +14,18 @@ import androidx.compose.material.icons.filled.Phone
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.apper.R
 import com.example.apper.speechToText.SpeechRecognizerContract
 import com.example.apper.util.UiEvent
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 
@@ -34,10 +41,12 @@ fun AddEditTodoScreen(
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.SCHEDULE_EXACT_ALARM,
             Manifest.permission.INTERNET,
-            //Manifest.permission.READ_CALENDAR,
-            //Manifest.permission.WRITE_CALENDAR
+            Manifest.permission.POST_NOTIFICATIONS,
+            Manifest.permission.READ_CALENDAR,
+            Manifest.permission.WRITE_CALENDAR
         )
     )
+    val recordingPermission = permissionsState.permissions.find { it.permission == Manifest.permission.RECORD_AUDIO}
     SideEffect {
         permissionsState.launchMultiplePermissionRequest()
     }
@@ -100,15 +109,14 @@ fun AddEditTodoScreen(
                     IconButton(
                         onClick =
                         {
-                            if (permissionsState.allPermissionsGranted) {
+                            if (recordingPermission!!.status.isGranted) {
                                 titleSpeechRecognizerLauncher.launch(Unit)
                             } else
                                 permissionsState.launchMultiplePermissionRequest()
                         }
                     ) {
                         Icon(
-                            // TODO cambiare icona speechToText
-                            imageVector = Icons.Default.Phone,
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_mic_24),
                             contentDescription = "Mic"
                         )
                     }
@@ -132,15 +140,15 @@ fun AddEditTodoScreen(
                     IconButton(
                         onClick =
                         {
-                            if (permissionsState.allPermissionsGranted) {
+
+                            if (recordingPermission!!.status.isGranted) {
                                 descriptionSpeechRecognizerLauncher.launch(Unit)
                             } else
                                 permissionsState.launchMultiplePermissionRequest()
                         }
                     ) {
                         Icon(
-                            // TODO cambiare icona speechToText
-                            imageVector = Icons.Default.Phone,
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_mic_24),
                             contentDescription = "Mic"
                         )
                     }
@@ -175,12 +183,43 @@ fun AddEditTodoScreen(
             Spacer(
                 modifier = Modifier.height(9.dp)
             )
-            Switch(
-                checked = viewModel.alarm,
-                onCheckedChange = {
-                    viewModel.onEvent(AddEditTodoEvent.OnAlarmChange(it))
-                }
+            Row (
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Switch(
+                    checked = viewModel.alarm,
+                    onCheckedChange = {
+                        viewModel.onEvent(AddEditTodoEvent.OnAlarmChange(it))
+                    }
+                )
+                Text(
+                    text = "To add notification",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .wrapContentHeight()
+                )
+            }
+            Spacer(
+                modifier = Modifier.height(9.dp)
             )
+            Row (
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Switch(
+                    checked = viewModel.calendar,
+                    onCheckedChange = {
+                        viewModel.onEvent(AddEditTodoEvent.OnCalendarSwitchChange(it))
+                    }
+                )
+                Text(
+                    text = "To add calendar reminder",
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .wrapContentHeight()
+                )
+            }
         }
     }
 }

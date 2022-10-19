@@ -16,6 +16,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -59,6 +60,9 @@ class AddEditTodoViewModel @Inject constructor(
     var alarm by mutableStateOf(false)
         private set
 
+    var calendar by mutableStateOf(false)
+        private set
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
@@ -72,6 +76,7 @@ class AddEditTodoViewModel @Inject constructor(
                     date = it.date ?: ""
                     time = it.time ?: ""
                     alarm = it.alarm
+                    calendar = it.calendar
                     this@AddEditTodoViewModel.todo = it
                 }
             }
@@ -97,30 +102,49 @@ class AddEditTodoViewModel @Inject constructor(
             is AddEditTodoEvent.OnAlarmChange ->{
                 alarm = event.alarm
             }
+            is AddEditTodoEvent.OnCalendarSwitchChange ->{
+                calendar = event.calendar
+            }
             is AddEditTodoEvent.OnSaveTodoClick ->{
 
                 viewModelScope.launch {
-                    if(title.isBlank()){
-                        sendUiEvent(UiEvent.ShowSnackBar(
-                            message = "Title can't be empty"
-                        ))
+                    if (title.isBlank()) {
+                        sendUiEvent(
+                            UiEvent.ShowSnackBar(
+                                message = "Title can't be empty"
+                            )
+                        )
                         return@launch
                     }
-                    if(alarm) {
-                        val alarmManager =
-                            ContextCompat.getSystemService(application, AlarmManager::class.java)
+                    Log.d("ME", "STO SALVANDO ADESSO")
+                    repo.insertTodo(
+                        Todo(
+                            title = title,
+                            description = description,
+                            isDone = todo?.isDone ?: false,
+                            date = date,
+                            time = time,
+                            alarm = alarm,
+                            calendar = calendar,
+                            id = todo?.id
+                        )
+                    )
+                }
 
-                        // create calendar instance
-                        // TODO check input, parseInt() exception handling
-                        val dateArray = date.split("-").map{it -> it.toInt()}
-                        val timeArray = time.split("-").map{it -> it.toInt()}
-                        val calendar = Calendar.getInstance()
-                        calendar.set(Calendar.YEAR, dateArray[0])
-                        calendar.set(Calendar.MONTH, dateArray[1])
-                        calendar.set(Calendar.DAY_OF_MONTH, dateArray[2])
-                        calendar.set(Calendar.HOUR_OF_DAY, timeArray[0])
-                        calendar.set(Calendar.MINUTE, timeArray[1])
-                        calendar.set(Calendar.SECOND, 0)
+                // create calendar instance
+                // TODO check input, parseInt() exception handling
+                val dateArray = date.split("-").map{it -> it.toInt()}
+                val timeArray = time.split("-").map{it -> it.toInt()}
+                val calendarInstance = Calendar.getInstance()
+                calendarInstance.set(Calendar.YEAR, dateArray[0])
+                calendarInstance.set(Calendar.MONTH, dateArray[1])
+                calendarInstance.set(Calendar.DAY_OF_MONTH, dateArray[2])
+                calendarInstance.set(Calendar.HOUR_OF_DAY, timeArray[0])
+                calendarInstance.set(Calendar.MINUTE, timeArray[1])
+                calendarInstance.set(Calendar.SECOND, 0)
+
+                viewModelScope.launch {
+                    if(alarm) {
 
                         /*
                         if (!canScheduleExactAlarm(alarmManager!!)) {
@@ -145,71 +169,62 @@ class AddEditTodoViewModel @Inject constructor(
                         }
 
                         */
-
-                        val startMillis: Long = Calendar.getInstance().run {
-                            set(dateArray[0], dateArray[1]-1, dateArray[2], timeArray[0], timeArray[1])
-                            timeInMillis
-                        }
-                        val endMillis: Long = Calendar.getInstance().run {
-                            set(dateArray[0], dateArray[1]-1, dateArray[2], timeArray[0]+1, timeArray[1])
-                            timeInMillis
-                        }
-
-                        val intentCalendar = Intent(Intent.ACTION_INSERT)
-                            .setData(CalendarContract.Events.CONTENT_URI)
-                            .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
-                            .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
-                            .putExtra(CalendarContract.Events.TITLE, title)
-                            .putExtra(CalendarContract.Events.DESCRIPTION, description)
-                        intentCalendar.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        ContextCompat.startActivity(application, intentCalendar, null)
-
-                        Log.d("ME", "Dovrei aver aggiunto l'evento!");
-                        Log.d("DATA", dateArray.toString())
-                        Log.d("ORA", timeArray.toString())
-
                         //////////////////////////////////////////////////
 
                         //if (calendar.time < Date()) calendar.add(Calendar.DAY_OF_MONTH, 1)
-                        val intent2 = Intent(
+
+                        val alarmManager =
+                            ContextCompat.getSystemService(application, AlarmManager::class.java)
+
+                        val intent = Intent(
                             application,
                             NotificationReceiver::class.java
                         )
-                        val pendingIntent2 = PendingIntent.getBroadcast(
+                        val pendingIntent = PendingIntent.getBroadcast(
                             application,
                             0,
-                            intent2,
+                            intent,
                             PendingIntent.FLAG_UPDATE_CURRENT
                         )
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            alarmManager?.setExactAndAllowWhileIdle(
+                            alarmManager!!.setExactAndAllowWhileIdle(
                                 AlarmManager.RTC_WAKEUP,
-                                calendar.timeInMillis,
-                                pendingIntent2
+                                calendarInstance.timeInMillis,
+                                pendingIntent
                             )
                         }
                         else {
-                            alarmManager?.setExact(
+                            alarmManager!!.setExact(
                                 AlarmManager.RTC_WAKEUP,
-                                calendar.timeInMillis,
-                                pendingIntent2
+                                calendarInstance.timeInMillis,
+                                pendingIntent
                             )
                         }
                     }
-                    Log.d("ME","STO SALVANDO ADESSO")
-                    repo.insertTodo(
-                        Todo(
-                            title = title,
-                            description = description,
-                            isDone = todo?.isDone ?: false,
-                            date = date,
-                            time = time,
-                            alarm = alarm,
-                            id = todo?.id
-                        )
-                    )
-                    sendUiEvent(UiEvent.PopBackStack)
                 }
+
+                if(calendar) {
+                    val startMillis: Long = Calendar.getInstance().run { set(dateArray[0], dateArray[1]-1, dateArray[2], timeArray[0], timeArray[1])
+                        timeInMillis
+                    }
+                    val endMillis: Long = Calendar.getInstance().run {
+                        set(dateArray[0], dateArray[1]-1, dateArray[2], timeArray[0]+1, timeArray[1])
+                        timeInMillis
+                    }
+                    val intentCalendar = Intent(Intent.ACTION_INSERT)
+                        .setData(CalendarContract.Events.CONTENT_URI)
+                        .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startMillis)
+                        .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endMillis)
+                        .putExtra(CalendarContract.Events.TITLE, title)
+                        .putExtra(CalendarContract.Events.DESCRIPTION, description)
+                    intentCalendar.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                    ContextCompat.startActivity(application, intentCalendar, null)
+
+                    Log.d("ME", "Dovrei aver aggiunto l'evento!");
+                    Log.d("DATA", dateArray.toString())
+                    Log.d("ORA", timeArray.toString())
+                }
+                sendUiEvent(UiEvent.PopBackStack)
             }
         }
     }
