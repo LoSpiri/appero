@@ -10,9 +10,12 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.apper.R
 import com.example.apper.data.Todo
 
 @Composable
@@ -78,11 +81,6 @@ fun TodoItem(todo: Todo, onEvent:(TodoListEvent) -> Unit, modifier: Modifier = M
                         modifier = Modifier.weight(1f)
                     )
                 }
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ){
                 todo.time?.let {
                     Spacer(
                         modifier = Modifier.height(5.dp)
@@ -91,6 +89,21 @@ fun TodoItem(todo: Todo, onEvent:(TodoListEvent) -> Unit, modifier: Modifier = M
                         text = it,
                         modifier = Modifier.weight(1f)
                     )
+                }
+                todo.recordingPath?.let {
+                    Spacer(
+                        modifier = Modifier.height(5.dp)
+                    )
+                    IconButton(
+                        onClick = {
+                            onEvent(TodoListEvent.OnPlayRecording(todo))
+                        }
+                    ){
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_play_arrow_24),
+                            contentDescription = "Play"
+                        )
+                    }
                 }
             }
         }

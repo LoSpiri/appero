@@ -43,15 +43,15 @@ fun AddEditTodoScreen(
             Manifest.permission.INTERNET,
             Manifest.permission.POST_NOTIFICATIONS,
             Manifest.permission.READ_CALENDAR,
-            Manifest.permission.WRITE_CALENDAR
+            Manifest.permission.WRITE_CALENDAR,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
     )
-    val recordingPermission = permissionsState.permissions.find { it.permission == Manifest.permission.RECORD_AUDIO}
     SideEffect {
         permissionsState.launchMultiplePermissionRequest()
     }
+    val recordingPermission = permissionsState.permissions.find { it.permission == Manifest.permission.RECORD_AUDIO}
 
-    // TODO creare speechToTextLauncher comune
     val titleSpeechRecognizerLauncher = rememberLauncherForActivityResult(
         contract = SpeechRecognizerContract(),
         onResult = {
@@ -180,6 +180,59 @@ fun AddEditTodoScreen(
                 },
                 modifier = Modifier.fillMaxWidth()
             )
+            Spacer(
+                modifier = Modifier.height(9.dp)
+            )
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    enabled = true,
+                    onClick = {
+                        if(recordingPermission!!.status.isGranted) {
+                            viewModel.onEvent(AddEditTodoEvent.OnStartRecording)
+                        }
+                        else {
+                            permissionsState.launchMultiplePermissionRequest()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_record_voice_over_24),
+                        contentDescription = "Start")
+                }
+                IconButton(
+                    enabled = true,
+                    onClick = {
+                        if(recordingPermission!!.status.isGranted) {
+                            viewModel.onEvent(AddEditTodoEvent.OnStopRecording)
+                        }
+                        else {
+                            permissionsState.launchMultiplePermissionRequest()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_stop_24),
+                        contentDescription = "Stop")
+                }
+                IconButton(
+                    enabled = true,
+                    onClick = {
+                        if(recordingPermission!!.status.isGranted) {
+                            viewModel.onEvent(AddEditTodoEvent.OnPlayRecording)
+                        }
+                        else {
+                            permissionsState.launchMultiplePermissionRequest()
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_play_arrow_24),
+                        contentDescription = "Play")
+                }
+            }
             Spacer(
                 modifier = Modifier.height(9.dp)
             )

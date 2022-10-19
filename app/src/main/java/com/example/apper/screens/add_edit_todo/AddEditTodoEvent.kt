@@ -8,4 +8,7 @@ sealed class AddEditTodoEvent{
     data class OnAlarmChange(val alarm: Boolean):AddEditTodoEvent()
     data class OnCalendarSwitchChange(val calendar: Boolean):AddEditTodoEvent()
     object OnSaveTodoClick: AddEditTodoEvent()
+    object OnStartRecording: AddEditTodoEvent()
+    object OnStopRecording: AddEditTodoEvent()
+    object OnPlayRecording: AddEditTodoEvent()
 }

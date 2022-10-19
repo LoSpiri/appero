@@ -8,20 +8,19 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.media.MediaPlayer
+import android.media.MediaRecorder
 import android.os.Build
 import android.provider.CalendarContract
-import android.provider.Settings
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.test.core.app.ApplicationProvider
 import com.example.apper.data.Todo
 import com.example.apper.data.TodoRepo
 import com.example.apper.notifications.NotificationReceiver
@@ -31,8 +30,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.io.File
 import java.util.*
 import javax.inject.Inject
+
 
 const val EXACT_ALARM_INTENT_REQUEST_CODE = 1001
 
@@ -63,8 +64,19 @@ class AddEditTodoViewModel @Inject constructor(
     var calendar by mutableStateOf(false)
         private set
 
+    var recordingPath by mutableStateOf("")
+        private set
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
+
+    // TODO Uno é deprecato, l'altro vuole API 31 xd
+    private val mediaRecorder =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            MediaRecorder(application)
+        } else {
+            MediaRecorder()
+        }
 
     init {
         val todoId = savedStateHandle.get<Int>("todoId")!!
@@ -77,12 +89,12 @@ class AddEditTodoViewModel @Inject constructor(
                     time = it.time ?: ""
                     alarm = it.alarm
                     calendar = it.calendar
+                    recordingPath = it.recordingPath ?: ""
                     this@AddEditTodoViewModel.todo = it
                 }
             }
         }
     }
-
 
     @SuppressLint("UnspecifiedImmutableFlag")
     fun onEvent(event:AddEditTodoEvent){
@@ -105,8 +117,41 @@ class AddEditTodoViewModel @Inject constructor(
             is AddEditTodoEvent.OnCalendarSwitchChange ->{
                 calendar = event.calendar
             }
+            is AddEditTodoEvent.OnStartRecording ->{
+                Log.d("START","Entered")
+                if(recordingPath == ""){
+                    val filePath = application.filesDir.absolutePath
+                    val fileName = "$filePath/${"abcdefghilmnopqrstuvz".toMutableList().shuffled().joinToString("")}.3gp"
+                    recordingPath = fileName
+                }
+                Log.d("START", recordingPath)
+                mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC)
+                mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP)
+                mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB)
+                mediaRecorder.setOutputFile(recordingPath)
+                mediaRecorder.prepare()
+                mediaRecorder.start()
+            }
+            is AddEditTodoEvent.OnStopRecording ->{
+                Log.d("STOP","Entered")
+                mediaRecorder.stop()
+                mediaRecorder.reset()
+                //mediaRecorder = null
+                Log.d("STOP",recordingPath)
+            }
+            is AddEditTodoEvent.OnPlayRecording ->{
+                Log.d("PLAY","Entered")
+                val mediaPlayer = MediaPlayer()
+                try {
+                    mediaPlayer.setDataSource(recordingPath)
+                    mediaPlayer.prepare()
+                    mediaPlayer.start()
+                }
+                catch (e:Exception) {
+                    Log.d("AHIA","Problem finding audioFile")
+                }
+            }
             is AddEditTodoEvent.OnSaveTodoClick ->{
-
                 viewModelScope.launch {
                     if (title.isBlank()) {
                         sendUiEvent(
@@ -126,22 +171,28 @@ class AddEditTodoViewModel @Inject constructor(
                             time = time,
                             alarm = alarm,
                             calendar = calendar,
+                            recordingPath = recordingPath,
                             id = todo?.id
                         )
                     )
+                    sendUiEvent(UiEvent.PopBackStack)
                 }
 
-                // create calendar instance
-                // TODO check input, parseInt() exception handling
-                val dateArray = date.split("-").map{it -> it.toInt()}
-                val timeArray = time.split("-").map{it -> it.toInt()}
                 val calendarInstance = Calendar.getInstance()
-                calendarInstance.set(Calendar.YEAR, dateArray[0])
-                calendarInstance.set(Calendar.MONTH, dateArray[1])
-                calendarInstance.set(Calendar.DAY_OF_MONTH, dateArray[2])
-                calendarInstance.set(Calendar.HOUR_OF_DAY, timeArray[0])
-                calendarInstance.set(Calendar.MINUTE, timeArray[1])
-                calendarInstance.set(Calendar.SECOND, 0)
+                var dateArray: List<Int> = mutableListOf()
+                var timeArray: List<Int> = mutableListOf()
+                if(date != "" && time != ""){
+                    // create calendar instance
+                    // TODO check input, parseInt() exception handling
+                    dateArray = date.split("-").map{it.toInt()}
+                    timeArray = time.split("-").map{it.toInt()}
+                    calendarInstance.set(Calendar.YEAR, dateArray[0])
+                    calendarInstance.set(Calendar.MONTH, dateArray[1])
+                    calendarInstance.set(Calendar.DAY_OF_MONTH, dateArray[2])
+                    calendarInstance.set(Calendar.HOUR_OF_DAY, timeArray[0])
+                    calendarInstance.set(Calendar.MINUTE, timeArray[1])
+                    calendarInstance.set(Calendar.SECOND, 0)
+                }
 
                 viewModelScope.launch {
                     if(alarm) {
@@ -200,10 +251,11 @@ class AddEditTodoViewModel @Inject constructor(
                                 pendingIntent
                             )
                         }
+                        Log.d("ALARM","Esco dalla coroutine alarm")
                     }
                 }
 
-                if(calendar) {
+                if(calendar && date != "" && time != "") {
                     val startMillis: Long = Calendar.getInstance().run { set(dateArray[0], dateArray[1]-1, dateArray[2], timeArray[0], timeArray[1])
                         timeInMillis
                     }
@@ -224,7 +276,6 @@ class AddEditTodoViewModel @Inject constructor(
                     Log.d("DATA", dateArray.toString())
                     Log.d("ORA", timeArray.toString())
                 }
-                sendUiEvent(UiEvent.PopBackStack)
             }
         }
     }

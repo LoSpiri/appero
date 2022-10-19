@@ -1,5 +1,7 @@
 package com.example.apper.screens.todo_list
 
+import android.media.MediaPlayer
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.apper.data.Todo
@@ -52,6 +54,18 @@ class TodoLIstViewModel @Inject constructor(private val repo: TodoRepo) : ViewMo
                     repo.insertTodo(event.todo.copy(
                         isDone = event.isDone
                     ))
+                }
+            }
+            is TodoListEvent.OnPlayRecording ->{
+                Log.d("TODOLIST","PLAY entered")
+                val mediaPlayer = MediaPlayer()
+                try {
+                    mediaPlayer.setDataSource(event.todo.recordingPath)
+                    mediaPlayer.prepare()
+                    mediaPlayer.start()
+                }
+                catch (e:Exception) {
+                    Log.d("TODOLIST","Problem finding audioFile")
                 }
             }
         }
