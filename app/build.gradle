@@ -5,6 +5,7 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 
+
 android {
     namespace 'com.example.apper'
     compileSdk 33
@@ -84,7 +85,7 @@ dependencies {
     // Kotlin Extensions and Coroutines support for Room
     implementation "androidx.room:room-ktx:2.4.3"
 
-    //permission handling in compose
+    // permission handling in compose
     implementation 'com.google.accompanist:accompanist-permissions:0.24.11-rc'
 
 }

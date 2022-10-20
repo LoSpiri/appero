@@ -40,7 +40,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     composable(
-                        route = Routes.ADD_EDIT_TODO + "?todoId={todoId}",
+                        route = Routes.ADD_EDIT_TODO, //+ "?todoId={todoId}",
                         arguments =
                         listOf(
                             navArgument(name = "todoId"){

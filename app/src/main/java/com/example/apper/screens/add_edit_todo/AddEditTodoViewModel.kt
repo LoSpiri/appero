@@ -29,8 +29,7 @@ import kotlinx.coroutines.launch
 import java.util.*
 import javax.inject.Inject
 
-
-const val EXACT_ALARM_INTENT_REQUEST_CODE = 1001
+//const val EXACT_ALARM_INTENT_REQUEST_CODE = 1001
 
 @HiltViewModel
 class AddEditTodoViewModel @Inject constructor(
@@ -244,6 +243,7 @@ class AddEditTodoViewModel @Inject constructor(
                     Log.d("ME", "Dovrei aver aggiunto l'evento!");
                     Log.d("DATA", dateArray.toString())
                     Log.d("ORA", timeArray.toString())
+
                 }
             }
         }

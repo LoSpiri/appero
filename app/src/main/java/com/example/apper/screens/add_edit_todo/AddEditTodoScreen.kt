@@ -6,15 +6,20 @@ import android.app.TimePickerDialog
 import android.widget.CalendarView
 import android.widget.TimePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.animation.animateColor
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
@@ -23,6 +28,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.apper.R
 import com.example.apper.speechToText.SpeechRecognizerContract
+import com.example.apper.ui.theme.GreenDark
+import com.example.apper.ui.theme.GreenMedium
 import com.example.apper.util.UiEvent
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
@@ -85,6 +92,8 @@ fun AddEditTodoScreen(
 
     var showCalendarView by remember { mutableStateOf(false) }
     var showTimePickerView by remember { mutableStateOf(false) }
+    var recording by remember { mutableStateOf(false) }
+    var recorded by remember { mutableStateOf(false) }
 
     Scaffold(
         scaffoldState = scaffoldState,
@@ -228,7 +237,7 @@ fun AddEditTodoScreen(
                             }
                         ) {
                             Icon(
-                                imageVector = Icons.Default.DateRange,
+                                imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_calendar_month_24),
                                 contentDescription = "Set date"
                             )
                         }
@@ -237,19 +246,6 @@ fun AddEditTodoScreen(
                 Spacer(
                     modifier = Modifier.height(9.dp)
                 )
-                /*
-                OutlinedTextField(
-                    value = viewModel.time,
-                    onValueChange = {
-                        viewModel.onEvent(AddEditTodoEvent.OnTimeChange(it))
-                    },
-                    placeholder = {
-                        Text(text = "hh-mm 24-hour format")
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                */
                 OutlinedTextField(
                     value = viewModel.time,
                     onValueChange = {
@@ -274,7 +270,7 @@ fun AddEditTodoScreen(
                         ) {
                             Icon(
                                 // TODO change icon to clock
-                                imageVector = Icons.Default.DateRange,
+                                imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_access_time_24),
                                 contentDescription = "Set time"
                             )
                         }
@@ -287,11 +283,54 @@ fun AddEditTodoScreen(
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    /*
+                    IconToggleButton(
+                        checked = !recording,
+                        enabled = !recording,
+                        onCheckedChange = {
+                            if (recordingPermission!!.status.isGranted) {
+                                viewModel.onEvent(AddEditTodoEvent.OnStartRecording)
+                                recording = true
+                            } else {
+                                permissionsState.launchMultiplePermissionRequest()
+                            }
+                        }
+                    ) {
+                        val transition = updateTransition(!recording, label = "Recording indicator")
+                        val tint by transition.animateColor(
+                            label = "Tint"
+                        ) { if (it) GreenMedium else Color.Black }
+                        val size by transition.animateDp(
+                            transitionSpec = {
+                                if (false isTransitioningTo true) {
+                                    keyframes {
+                                        durationMillis = 250
+                                        30.dp at 0 with LinearOutSlowInEasing // for 0-15 ms
+                                        35.dp at 15 with FastOutLinearInEasing // for 15-75 ms
+                                        40.dp at 75 // ms
+                                        35.dp at 150 // ms
+                                    }
+                                } else {
+                                    spring(stiffness = Spring.StiffnessVeryLow)
+                                }
+                            },
+                            label = "Size"
+                        ) { 30.dp }
+                        Icon(
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_record_voice_over_24),
+                            contentDescription = "Start",
+                            tint = tint,
+                            modifier = Modifier.size(size)
+                        )
+                    }
+                    */
                     IconButton(
-                        enabled = true,
+                        enabled = !recording,
                         onClick = {
                             if (recordingPermission!!.status.isGranted) {
                                 viewModel.onEvent(AddEditTodoEvent.OnStartRecording)
+                                recording = true
+                                recorded = false
                             } else {
                                 permissionsState.launchMultiplePermissionRequest()
                             }
@@ -303,10 +342,12 @@ fun AddEditTodoScreen(
                         )
                     }
                     IconButton(
-                        enabled = true,
+                        enabled = recording,
                         onClick = {
                             if (recordingPermission!!.status.isGranted) {
                                 viewModel.onEvent(AddEditTodoEvent.OnStopRecording)
+                                recording = false
+                                recorded = true
                             } else {
                                 permissionsState.launchMultiplePermissionRequest()
                             }
@@ -318,7 +359,7 @@ fun AddEditTodoScreen(
                         )
                     }
                     IconButton(
-                        enabled = true,
+                        enabled = recorded,
                         onClick = {
                             if (recordingPermission!!.status.isGranted) {
                                 viewModel.onEvent(AddEditTodoEvent.OnPlayRecording)
@@ -367,7 +408,7 @@ fun AddEditTodoScreen(
                         }
                     )
                     Text(
-                        text = "To add calendar reminder",
+                        text = "To add to calendar",
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .wrapContentHeight()

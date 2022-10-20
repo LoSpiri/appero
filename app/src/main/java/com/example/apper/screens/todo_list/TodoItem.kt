@@ -95,6 +95,7 @@ fun TodoItem(todo: Todo, onEvent:(TodoListEvent) -> Unit, modifier: Modifier = M
                         modifier = Modifier.height(5.dp)
                     )
                     IconButton(
+                        enabled = todo.recordingPath != "",
                         onClick = {
                             onEvent(TodoListEvent.OnPlayRecording(todo))
                         }

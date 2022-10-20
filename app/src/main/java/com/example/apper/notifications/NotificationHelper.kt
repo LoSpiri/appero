@@ -26,7 +26,7 @@ class NotificationHelper(private val mContext: Context) {
         val mBuilder = NotificationCompat.Builder(mContext, NOTIFICATION_CHANNEL_ID)
         // TODO change notification icon
         mBuilder
-            .setSmallIcon(R.mipmap.sym_def_app_icon)
+            .setSmallIcon(com.example.apper.R.drawable.ic_notif_apper)
             .setContentTitle(title)
             .setContentText(description)
             .setAutoCancel(true)
