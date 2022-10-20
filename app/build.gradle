@@ -84,10 +84,6 @@ dependencies {
     // Kotlin Extensions and Coroutines support for Room
     implementation "androidx.room:room-ktx:2.4.3"
 
-    // Date Time Picker
-    implementation("io.github.vanpra.compose-material-dialogs:datetime:0.8.1-rc")
-    implementation "io.github.vanpra.compose-material-dialogs:core:0.7.2"
-
     //permission handling in compose
     implementation 'com.google.accompanist:accompanist-permissions:0.24.11-rc'
 

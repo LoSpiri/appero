@@ -3,9 +3,7 @@ package com.example.apper.screens.add_edit_todo
 import android.R
 import android.annotation.SuppressLint
 import android.app.AlarmManager
-import android.app.NotificationManager
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
@@ -16,7 +14,6 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -30,7 +27,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
-import java.io.File
 import java.util.*
 import javax.inject.Inject
 
@@ -96,7 +92,7 @@ class AddEditTodoViewModel @Inject constructor(
         }
     }
 
-    @SuppressLint("UnspecifiedImmutableFlag")
+    @SuppressLint("UnspecifiedImmutableFlag", "RestrictedApi")
     fun onEvent(event:AddEditTodoEvent){
         when(event){
             is AddEditTodoEvent.OnTitleChange ->{
@@ -105,8 +101,16 @@ class AddEditTodoViewModel @Inject constructor(
             is AddEditTodoEvent.OnDescriptionChange ->{
                 description = event.description
             }
+            /*
             is AddEditTodoEvent.OnDateChange ->{
                 date = event.date
+            }
+            */
+            is AddEditTodoEvent.OnDateClick ->{
+                date = "${event.year}-${event.month}-${event.day}"
+            }
+            is AddEditTodoEvent.OnTimeClick ->{
+                time = "${event.hour}-${event.minute}"
             }
             is AddEditTodoEvent.OnTimeChange ->{
                 time = event.time
@@ -196,37 +200,8 @@ class AddEditTodoViewModel @Inject constructor(
 
                 viewModelScope.launch {
                     if(alarm) {
-
-                        /*
-                        if (!canScheduleExactAlarm(alarmManager!!)) {
-                            ContextCompat.startActivity(
-                                application,
-                                Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM),
-                                null
-                            )
-                        }
-                        val intent = Intent(application, MyAlarm::class.java)
-                        val pendingIntent = PendingIntent.getBroadcast(
-                            application,
-                            EXACT_ALARM_INTENT_REQUEST_CODE,
-                            intent,
-                            PendingIntent.FLAG_IMMUTABLE
-                        )
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-                        }
-                        else {
-                            alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent)
-                        }
-
-                        */
-                        //////////////////////////////////////////////////
-
-                        //if (calendar.time < Date()) calendar.add(Calendar.DAY_OF_MONTH, 1)
-
                         val alarmManager =
                             ContextCompat.getSystemService(application, AlarmManager::class.java)
-
                         val intent = Intent(
                             application,
                             NotificationReceiver::class.java
@@ -283,29 +258,6 @@ class AddEditTodoViewModel @Inject constructor(
     private fun sendUiEvent(event: UiEvent){
         viewModelScope.launch {
             _uiEvent.send(event)
-        }
-    }
-
-    private fun canScheduleExactAlarm(alarmManager: AlarmManager): Boolean {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            alarmManager.canScheduleExactAlarms()
-        } else {
-            true
-        }
-    }
-
-    class MyAlarm : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            Log.d("ME", "SONO NELLA ONRECEIVE")
-
-            val mBuilder: NotificationCompat.Builder = NotificationCompat.Builder(context)
-                .setSmallIcon(R.drawable.sym_def_app_icon)
-                .setContentTitle("My notification")
-                .setContentText("Hello World!")
-
-            val mNotificationManager =
-                context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            mNotificationManager.notify(1, mBuilder.build())
         }
     }
 }
