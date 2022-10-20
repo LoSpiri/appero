@@ -34,11 +34,6 @@
             </intent-filter>
         </activity>
         <receiver
-            android:name=".screens.add_edit_todo.AddEditTodoViewModel$MyAlarm"
-            android:enabled="true"
-            android:exported="false" >
-        </receiver>
-        <receiver
             android:name=".notifications.NotificationReceiver"
             android:enabled="true"
             android:exported="false" >

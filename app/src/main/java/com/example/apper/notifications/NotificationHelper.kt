@@ -11,22 +11,25 @@ import android.os.Build
 import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import com.example.apper.MainActivity
+import kotlin.random.Random
 
 class NotificationHelper(private val mContext: Context) {
-    fun createNotification() {
+    fun createNotification(title: String, description: String) {
         val intent = Intent(mContext, MainActivity::class.java)
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         val resultPendingIntent = PendingIntent.getActivity(
             mContext,
-            0 /* Request code */, intent,
+            0,
+            intent,
             PendingIntent.FLAG_UPDATE_CURRENT
         )
         val mBuilder = NotificationCompat.Builder(mContext, NOTIFICATION_CHANNEL_ID)
         // TODO change notification icon
-        mBuilder.setSmallIcon(R.mipmap.sym_def_app_icon)
-        mBuilder.setContentTitle("Title")
-            .setContentText("Content")
-            .setAutoCancel(false)
+        mBuilder
+            .setSmallIcon(R.mipmap.sym_def_app_icon)
+            .setContentTitle(title)
+            .setContentText(description)
+            .setAutoCancel(true)
             .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
             .setContentIntent(resultPendingIntent)
         val mNotificationManager =
@@ -46,7 +49,7 @@ class NotificationHelper(private val mContext: Context) {
             mBuilder.setChannelId(NOTIFICATION_CHANNEL_ID)
             mNotificationManager.createNotificationChannel(notificationChannel)
         }
-        mNotificationManager.notify(0 /* Request Code */, mBuilder.build())
+        mNotificationManager.notify(Random.nextInt(0,1000), mBuilder.build())
     }
 
     companion object {

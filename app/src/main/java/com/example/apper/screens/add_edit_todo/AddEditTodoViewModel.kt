@@ -1,6 +1,5 @@
 package com.example.apper.screens.add_edit_todo
 
-import android.R
 import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -101,19 +100,11 @@ class AddEditTodoViewModel @Inject constructor(
             is AddEditTodoEvent.OnDescriptionChange ->{
                 description = event.description
             }
-            /*
-            is AddEditTodoEvent.OnDateChange ->{
-                date = event.date
-            }
-            */
             is AddEditTodoEvent.OnDateClick ->{
                 date = "${event.year}-${event.month}-${event.day}"
             }
             is AddEditTodoEvent.OnTimeClick ->{
                 time = "${event.hour}-${event.minute}"
-            }
-            is AddEditTodoEvent.OnTimeChange ->{
-                time = event.time
             }
             is AddEditTodoEvent.OnAlarmChange ->{
                 alarm = event.alarm
@@ -198,17 +189,20 @@ class AddEditTodoViewModel @Inject constructor(
                     calendarInstance.set(Calendar.SECOND, 0)
                 }
 
+                // TODO ask Gervasi: better if or coroutine externally
                 viewModelScope.launch {
-                    if(alarm) {
+                    if(alarm && date != "" && time != "") {
                         val alarmManager =
                             ContextCompat.getSystemService(application, AlarmManager::class.java)
                         val intent = Intent(
                             application,
                             NotificationReceiver::class.java
                         )
+                        intent.putExtra("title",title)
+                        intent.putExtra("description",description)
                         val pendingIntent = PendingIntent.getBroadcast(
                             application,
-                            0,
+                            calendarInstance.timeInMillis.toInt(),
                             intent,
                             PendingIntent.FLAG_UPDATE_CURRENT
                         )
