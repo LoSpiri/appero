@@ -64,13 +64,15 @@ fun TodoListScreen(
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ){
-            items(todos.value){todo->
+            items(
+                todos.value
+            ){todo->
                 TodoItem(
                     todo = todo,
                     onEvent = viewModel::onEvent,
                     modifier = Modifier.fillMaxWidth()
                         .clickable {
-                            viewModel.onEvent(TodoListEvent.OnTodoClick(todo))
+                            viewModel.onEvent(TodoListEvent.OnEditTodoClick(todo))
                         }
                         .padding(16.dp)
                 )

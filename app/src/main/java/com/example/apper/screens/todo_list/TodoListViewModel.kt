@@ -26,7 +26,7 @@ class TodoLIstViewModel @Inject constructor(private val repo: TodoRepo) : ViewMo
 
     fun onEvent(event: TodoListEvent){
         when(event){
-            is TodoListEvent.OnTodoClick ->{
+            is TodoListEvent.OnEditTodoClick ->{
                 sendUiEvent(UiEvent.Navigate(Routes.ADD_EDIT_TODO + "?todoId=${event.todo.id}"))
             }
             is TodoListEvent.OnAddTodoClick ->{

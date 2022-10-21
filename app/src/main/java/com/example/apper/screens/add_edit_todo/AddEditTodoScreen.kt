@@ -52,7 +52,6 @@ fun AddEditTodoScreen(
             Manifest.permission.POST_NOTIFICATIONS,
             Manifest.permission.READ_CALENDAR,
             Manifest.permission.WRITE_CALENDAR,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
         )
     )
     SideEffect {
@@ -60,6 +59,7 @@ fun AddEditTodoScreen(
     }
     val recordingPermission = permissionsState.permissions.find { it.permission == Manifest.permission.RECORD_AUDIO}
 
+    // TODO change into one for both
     val titleSpeechRecognizerLauncher = rememberLauncherForActivityResult(
         contract = SpeechRecognizerContract(),
         onResult = {
