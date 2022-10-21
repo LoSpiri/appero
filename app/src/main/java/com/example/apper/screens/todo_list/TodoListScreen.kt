@@ -66,13 +66,13 @@ fun TodoListScreen(
         ){
             items(
                 todos.value
-            ){todo->
+            ){
                 TodoItem(
-                    todo = todo,
+                    todo = it,
                     onEvent = viewModel::onEvent,
                     modifier = Modifier.fillMaxWidth()
                         .clickable {
-                            viewModel.onEvent(TodoListEvent.OnEditTodoClick(todo))
+                            viewModel.onEvent(TodoListEvent.OnEditTodoClick(it))
                         }
                         .padding(16.dp)
                 )

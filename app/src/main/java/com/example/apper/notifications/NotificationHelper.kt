@@ -24,7 +24,6 @@ class NotificationHelper(private val mContext: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT
         )
         val mBuilder = NotificationCompat.Builder(mContext, NOTIFICATION_CHANNEL_ID)
-        // TODO change notification icon
         mBuilder
             .setSmallIcon(com.example.apper.R.drawable.ic_notif_apper)
             .setContentTitle(title)

@@ -2,11 +2,13 @@
 
 Apperó is an app that helps its users annotate tasks they have to do,
 with a particular focus on letting them do it as fast as possible,
-providing the possibility to attach various types of content ()
-and synchronizing with other applications.
+providing the possibility to attach various types of content
+and synchronizing with other applications.  
 
+[Github Repo](https://github.com/LoSpiri/appero)
 
 #Features:
+- Saving content rich tasks
 - Recording audio attachments
 - Setting up notifications
 - Setting up calendar events
@@ -26,6 +28,17 @@ because they are reached using different NavController.navigate strings. Except 
 going back to todo_list is done using the NavController.popBackStack method.
 
 #MVVM:
+![alt text](app/MVVM.png)
+(Ignore software design conventions)
+<br></br>
+Apperó follow the MVVM architecture, using the 2 composables as views, 
+assigning them a viewmodel each and connecting the viewmodels to a database.  
+To avoid if conditions here and there and instead group all the logic together,
+it uses events, sent and received through channels placed in the viewmodels
+and accessed from their respective view to process the event resposnsible for the UI.
+The possible events are listed in event classes, with a shared one for the UI ones.  
+<br></br>
+
 
 
 

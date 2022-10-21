@@ -177,7 +177,6 @@ class AddEditTodoViewModel @Inject constructor(
                 var timeArray: List<Int> = mutableListOf()
                 if(date != "" && time != ""){
                     // create calendar instance
-                    // TODO check input, parseInt() exception handling
                     dateArray = date.split("-").map{it.toInt()}
                     timeArray = time.split("-").map{it.toInt()}
                     calendarInstance.set(Calendar.YEAR, dateArray[0])
@@ -188,7 +187,7 @@ class AddEditTodoViewModel @Inject constructor(
                     calendarInstance.set(Calendar.SECOND, 0)
                 }
 
-                // TODO ask Gervasi: better if or coroutine externally
+                // TODO better if or coroutine externally
                 viewModelScope.launch {
                     if(alarm && date != "" && time != "") {
                         val alarmManager =

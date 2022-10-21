@@ -1,0 +1,98 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+!pragma layout smetana
+
+class TodoListScreen {
+    + UiEvent.ShowSnackBar()
+    + UiEvent.Navigate()
+}
+
+class TodoListEvent {
+    - OnDeleteTodoClick()
+    - OnDoneChange()
+    - OnEditTodoClick()
+    - OnPlayRecording()
+    - OnUndoDeleteClick()
+    - OnAddTodoClick()
+}
+
+class TodoListViewModel {
+    - todos = getTodos()
+    - uiEvent = Channel().receiveAsFlow()
+    + TodoListEvent.OnEditTodoClick()
+    + TodoListEvent.OnAddTodoClick()
+    + TodoListEvent.OnUndoDeleteClick()
+    + TodoListEvent.OnDoneChange()
+    + TodoListEvent.OnPlayRecording()
+    + sendUiEvent()
+}
+
+TodoListScreen -- TodoListViewModel
+TodoListScreen -- UiEvent
+TodoListViewModel -- TodoListEvent
+TodoListViewModel -- TodoDatabase : data
+
+class AddEditTodoScreen {
+    - permissionState
+    + UiEvent.PopBackStack()
+    + UiEvent.ShowSnackBar()
+}
+
+class AddEditTodoEvent {
+    - OnTitleChange()
+    - OnDescriptionChange()
+    - OnAlarmChange()
+    - OnCalendarSwitchChange()
+    - OnDateClick()
+    - OnTimeClick()
+    - OnSaveTodoClick()
+    - OnStartRecording()
+    - OnStopRecording()
+    - OnPlayRecording()
+}
+
+class AddEditTodoViewModel {
+    - todo : Todo
+    - title : String
+    - description : String
+    - date : String
+    - time : String
+    - alarm : Boolean
+    - calendar : Boolean
+    - recordingPath : String
+    - uiEvent = Channel().receiveAsFlow()
+    + AddEditTodoEvent.OnTitleChange()
+    + AddEditTodoEvent.OnDescriptionChange()
+    + AddEditTodoEvent.OnDateClick()
+    + AddEditTodoEvent.OnTimeClick()
+    + AddEditTodoEvent.OnAlarmChange()
+    + AddEditTodoEvent.OnCalendarSwitchChange()
+    + AddEditTodoEvent.OnStartRecording()
+    + AddEditTodoEvent.OnStopRecording()
+    + AddEditTodoEvent.OnPlayRecording()
+    + AddEditTodoEvent.OnSaveTodoClick()
+    + sendUiEvent()
+}
+
+AddEditTodoScreen -- AddEditTodoViewModel
+AddEditTodoScreen -- UiEvent
+AddEditTodoViewModel -- AddEditTodoEvent
+AddEditTodoViewModel -- TodoDatabase : data
+
+class UiEvent {
+    - PopBackStack()
+    - Navigate()
+    - ShowSnackBar()
+}
+
+class TodoDatabase {
+    + .insertTodo(todo)
+    + .deleteTodo(todo)
+    + .getTodoById(id)
+    + .getTodos()
+}
+
+
+
+@enduml

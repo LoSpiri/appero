@@ -1,0 +1,17 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+title Navigation Diagram
+
+participant "todo_list" as LIST
+participant "add_todo" as ADD
+participant "edit_todo" as EDIT
+
+LIST -> ADD : navigate(add_edit_todo)
+LIST -> EDIT : navigate(add_edit_todo+?todoId=${event.todo.id})
+ADD -> LIST : popBackStack
+EDIT -> LIST : popBackStack
+
+@enduml

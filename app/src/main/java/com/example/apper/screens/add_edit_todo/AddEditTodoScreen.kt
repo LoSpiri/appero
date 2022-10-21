@@ -2,20 +2,15 @@ package com.example.apper.screens.add_edit_todo
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.app.TimePickerDialog
 import android.widget.CalendarView
 import android.widget.TimePicker
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.compose.animation.animateColor
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,13 +23,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.apper.R
 import com.example.apper.speechToText.SpeechRecognizerContract
-import com.example.apper.ui.theme.GreenDark
-import com.example.apper.ui.theme.GreenMedium
 import com.example.apper.util.UiEvent
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-
+import java.util.*
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -100,6 +93,7 @@ fun AddEditTodoScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(17.dp),
+        // TODO Solve white border
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 if(showCalendarView){
@@ -120,8 +114,15 @@ fun AddEditTodoScreen(
         if (showCalendarView) {
             AndroidView(
                 { CalendarView(it) },
-                modifier = Modifier.wrapContentWidth(),
+                modifier = Modifier
+                    .wrapContentWidth()
+                    .background(Color.White),
                 update = {
+                    val cal = Calendar.getInstance()
+                    val yearNow = cal.get(Calendar.YEAR)
+                    val monthNow = cal.get(Calendar.MONTH)
+                    val dayNow = cal.get(Calendar.DAY_OF_MONTH)
+                    viewModel.onEvent(AddEditTodoEvent.OnDateClick(yearNow,monthNow,dayNow))
                     it.setOnDateChangeListener {
                             calendarView, year, month, day ->
                                 viewModel.onEvent(AddEditTodoEvent.OnDateClick(year,month,day))
@@ -136,6 +137,10 @@ fun AddEditTodoScreen(
                 },
                 modifier = Modifier.wrapContentWidth(),
                 update = {
+                    val cal = Calendar.getInstance()
+                    val hourNow = cal.get(Calendar.HOUR_OF_DAY)
+                    val minuteNow = cal.get(Calendar.MINUTE)
+                    viewModel.onEvent(AddEditTodoEvent.OnTimeClick(hourNow,minuteNow))
                     it.setOnTimeChangedListener {
                             view, hourOfDay, minute ->
                                 viewModel.onEvent(AddEditTodoEvent.OnTimeClick(hourOfDay,minute))
@@ -144,7 +149,11 @@ fun AddEditTodoScreen(
             )
         }else {
 
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                //.weight(weight =1f, fill = false)
+            ) {
 
                 OutlinedTextField(
                     value = viewModel.title,
@@ -269,7 +278,6 @@ fun AddEditTodoScreen(
                             }
                         ) {
                             Icon(
-                                // TODO change icon to clock
                                 imageVector = ImageVector.vectorResource(id = R.drawable.ic_baseline_access_time_24),
                                 contentDescription = "Set time"
                             )

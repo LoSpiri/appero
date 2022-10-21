@@ -1,24 +1,24 @@
 package com.example.apper.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
-import androidx.core.content.ContextCompat
-import com.example.apper.R
+import androidx.compose.ui.graphics.Color
 
 private val DarkColorPalette = darkColors(
     primary = GreenLight,
     primaryVariant = GreenDark,
-    secondary = YellowMedium
+    secondary = YellowMedium,
+    background = Color.Black,
 )
 
 private val LightColorPalette = lightColors(
     primary = GreenMedium,
     primaryVariant = GreenDark,
-    secondary = YellowMedium
+    secondary = YellowMedium,
+    background = Color.White,
 
     /* Other default colors to override
     background = Color.White,
