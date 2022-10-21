@@ -7,14 +7,14 @@ and synchronizing with other applications.
 
 [Github Repo](https://github.com/LoSpiri/appero)
 
-##Features:
+## Features:
 - Saving content rich tasks
 - Recording audio attachments
 - Setting up notifications
 - Setting up calendar events
 - Soon to be: Adding tasks to Notion databases
 
-##Navigation:
+## Navigation:
 ![alt text](app/Navigation-Navigation_Diagram.png)
 <br></br>
 The app is composed of 2 main composables, todo_list and add_edit_todo,
@@ -27,7 +27,7 @@ I separated add_todo and edit_todo, although they are actually the same composab
 because they are reached using different NavController.navigate strings. Except for this, from both
 going back to todo_list is done using the NavController.popBackStack method.
 
-##MVVM:
+## MVVM:
 ![alt text](app/MVVM.png)
 (Ignore software design conventions)
 <br></br>
