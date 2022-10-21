@@ -371,6 +371,9 @@ fun AddEditTodoScreen(
                             contentDescription = "Play"
                         )
                     }
+                    Text(
+                        text = "Record a message"
+                    )
                 }
                 Spacer(
                     modifier = Modifier.height(9.dp)
