@@ -28,7 +28,7 @@ because they are reached using different NavController.navigate strings. Except 
 going back to todo_list is done using the NavController.popBackStack method.
 
 ## MVVM
-![alt text](app/MVVM.png)
+![alt text](app/MVVM.png)  
 (Ignore software design conventions)
 <br></br>
 Apperó follow the MVVM architecture, using the 2 composables as views, 

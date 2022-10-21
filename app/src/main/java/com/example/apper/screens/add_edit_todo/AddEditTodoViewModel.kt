@@ -100,7 +100,7 @@ class AddEditTodoViewModel @Inject constructor(
                 description = event.description
             }
             is AddEditTodoEvent.OnDateClick ->{
-                date = "${event.year}-${event.month}-${event.day}"
+                date = "${event.year}-${event.month+1}-${event.day}"
             }
             is AddEditTodoEvent.OnTimeClick ->{
                 time = "${event.hour}-${event.minute}"
@@ -221,7 +221,6 @@ class AddEditTodoViewModel @Inject constructor(
                         Log.d("ALARM","Esco dalla coroutine alarm")
                     }
                 }
-
                 if(calendar && date != "" && time != "") {
                     val startMillis: Long = Calendar.getInstance().run { set(dateArray[0], dateArray[1]-1, dateArray[2], timeArray[0], timeArray[1])
                         timeInMillis
@@ -242,7 +241,6 @@ class AddEditTodoViewModel @Inject constructor(
                     Log.d("ME", "Dovrei aver aggiunto l'evento!");
                     Log.d("DATA", dateArray.toString())
                     Log.d("ORA", timeArray.toString())
-
                 }
             }
         }

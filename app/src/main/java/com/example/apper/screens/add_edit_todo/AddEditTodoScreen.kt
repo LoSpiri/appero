@@ -8,7 +8,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.MaterialTheme.colors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.runtime.*
@@ -93,7 +92,6 @@ fun AddEditTodoScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(17.dp),
-        // TODO Solve white border
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 if(showCalendarView){
@@ -199,7 +197,6 @@ fun AddEditTodoScreen(
                         IconButton(
                             onClick =
                             {
-
                                 if (recordingPermission!!.status.isGranted) {
                                     descriptionSpeechRecognizerLauncher.launch(Unit)
                                 } else
@@ -217,14 +214,7 @@ fun AddEditTodoScreen(
                     modifier = Modifier.height(9.dp)
                 )
                 OutlinedTextField(
-                    value = if (viewModel.date == ""){
-                        viewModel.date
-                    }
-                    else {
-                        val arr = viewModel.date.split("-").map{it.toInt()}.toMutableList()
-                        arr[1]++
-                        arr.joinToString("-")
-                         },
+                    value = viewModel.date,
                     onValueChange = {
                         showCalendarView = true
                     },
