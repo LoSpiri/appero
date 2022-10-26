@@ -17,12 +17,15 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
 import com.example.apper.data.Todo
 import com.example.apper.data.TodoRepo
 import com.example.apper.notifications.NotificationReceiver
 import com.example.apper.util.UiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -58,6 +61,9 @@ class AddEditTodoViewModel @Inject constructor(
     var calendar by mutableStateOf(false)
         private set
 
+    var notion by mutableStateOf(false)
+        private set
+
     var recordingPath by mutableStateOf("")
         private set
 
@@ -83,6 +89,7 @@ class AddEditTodoViewModel @Inject constructor(
                     time = it.time ?: ""
                     alarm = it.alarm
                     calendar = it.calendar
+                    notion = it.notion
                     recordingPath = it.recordingPath ?: ""
                     this@AddEditTodoViewModel.todo = it
                 }
@@ -111,6 +118,9 @@ class AddEditTodoViewModel @Inject constructor(
             is AddEditTodoEvent.OnCalendarSwitchChange ->{
                 calendar = event.calendar
             }
+            is AddEditTodoEvent.OnNotionSwitchChange ->{
+                notion = event.notion
+            }
             is AddEditTodoEvent.OnStartRecording ->{
                 Log.d("START","Entered")
                 if(recordingPath == ""){
@@ -134,15 +144,18 @@ class AddEditTodoViewModel @Inject constructor(
                 Log.d("STOP",recordingPath)
             }
             is AddEditTodoEvent.OnPlayRecording ->{
-                Log.d("PLAY","Entered")
-                val mediaPlayer = MediaPlayer()
-                try {
-                    mediaPlayer.setDataSource(recordingPath)
-                    mediaPlayer.prepare()
-                    mediaPlayer.start()
-                }
-                catch (e:Exception) {
-                    Log.d("AHIA","Problem finding audioFile")
+                // TODO test this thread
+                viewModelScope.launch {
+                    Log.d("PLAY","Entered")
+                    val mediaPlayer = MediaPlayer()
+                    try {
+                        mediaPlayer.setDataSource(recordingPath)
+                        mediaPlayer.prepare()
+                        mediaPlayer.start()
+                    }
+                    catch (e:Exception) {
+                        Log.d("AHIA","Problem finding audioFile")
+                    }
                 }
             }
             is AddEditTodoEvent.OnSaveTodoClick ->{
@@ -165,6 +178,7 @@ class AddEditTodoViewModel @Inject constructor(
                             time = time,
                             alarm = alarm,
                             calendar = calendar,
+                            notion = notion,
                             recordingPath = recordingPath,
                             id = todo?.id
                         )
@@ -172,23 +186,23 @@ class AddEditTodoViewModel @Inject constructor(
                     sendUiEvent(UiEvent.PopBackStack)
                 }
 
-                val calendarInstance = Calendar.getInstance()
-                var dateArray: List<Int> = mutableListOf()
-                var timeArray: List<Int> = mutableListOf()
-                if(date != "" && time != ""){
-                    // create calendar instance
-                    dateArray = date.split("-").map{it.toInt()}
-                    timeArray = time.split("-").map{it.toInt()}
-                    calendarInstance.set(Calendar.YEAR, dateArray[0])
-                    calendarInstance.set(Calendar.MONTH, dateArray[1])
-                    calendarInstance.set(Calendar.DAY_OF_MONTH, dateArray[2])
-                    calendarInstance.set(Calendar.HOUR_OF_DAY, timeArray[0])
-                    calendarInstance.set(Calendar.MINUTE, timeArray[1])
-                    calendarInstance.set(Calendar.SECOND, 0)
-                }
-
                 // TODO better if or coroutine externally
+                // Add Notification
                 viewModelScope.launch {
+                    val calendarInstance = Calendar.getInstance()
+                    var dateArray: List<Int> = mutableListOf()
+                    var timeArray: List<Int> = mutableListOf()
+                    if(date != "" && time != ""){
+                        // create calendar instance
+                        dateArray = date.split("-").map{it.toInt()}
+                        timeArray = time.split("-").map{it.toInt()}
+                        calendarInstance.set(Calendar.YEAR, dateArray[0])
+                        calendarInstance.set(Calendar.MONTH, dateArray[1])
+                        calendarInstance.set(Calendar.DAY_OF_MONTH, dateArray[2])
+                        calendarInstance.set(Calendar.HOUR_OF_DAY, timeArray[0])
+                        calendarInstance.set(Calendar.MINUTE, timeArray[1])
+                        calendarInstance.set(Calendar.SECOND, 0)
+                    }
                     if(alarm && date != "" && time != "") {
                         val alarmManager =
                             ContextCompat.getSystemService(application, AlarmManager::class.java)
@@ -219,9 +233,31 @@ class AddEditTodoViewModel @Inject constructor(
                             )
                         }
                         Log.d("ALARM","Esco dalla coroutine alarm")
+                        // TODO action_boot_completed
+                        // with permission receive_boot_completed
+                        // otherwise bb at shutdown
                     }
                 }
+
+                // Add to Notion
+                viewModelScope.launch {
+                    if(notion && date != "" && time != ""){
+                        if (! Python.isStarted()) {
+                            Python.start(AndroidPlatform(application))
+                        }
+                        val py = Python.getInstance()
+                        val module = py.getModule("notionForAndroid")
+                        module.callAttr("notion_integration", title, description, date, time)
+                    }
+                }
+
+                // Add to Calendar
                 if(calendar && date != "" && time != "") {
+                    var dateArray: List<Int> = mutableListOf()
+                    var timeArray: List<Int> = mutableListOf()
+                    dateArray = date.split("-").map { it.toInt() }
+                    timeArray = time.split("-").map { it.toInt() }
+
                     val startMillis: Long = Calendar.getInstance().run { set(dateArray[0], dateArray[1]-1, dateArray[2], timeArray[0], timeArray[1])
                         timeInMillis
                     }

@@ -415,6 +415,26 @@ fun AddEditTodoScreen(
                             .wrapContentHeight()
                     )
                 }
+                Spacer(
+                    modifier = Modifier.height(9.dp)
+                )
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Switch(
+                        checked = viewModel.notion,
+                        onCheckedChange = {
+                            viewModel.onEvent(AddEditTodoEvent.OnNotionSwitchChange(it))
+                        }
+                    )
+                    Text(
+                        text = "To add to Notion",
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .wrapContentHeight()
+                    )
+                }
             }
         }
     }

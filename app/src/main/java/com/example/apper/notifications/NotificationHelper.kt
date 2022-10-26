@@ -48,6 +48,7 @@ class NotificationHelper(private val mContext: Context) {
             mBuilder.setChannelId(NOTIFICATION_CHANNEL_ID)
             mNotificationManager.createNotificationChannel(notificationChannel)
         }
+        // TODO replace notification using same id
         mNotificationManager.notify(Random.nextInt(0,1000), mBuilder.build())
     }
 

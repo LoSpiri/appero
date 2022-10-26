@@ -12,6 +12,7 @@ data class Todo(
     val time: String?,
     val alarm: Boolean,
     val calendar: Boolean,
+    val notion: Boolean,
     val recordingPath: String?,
     @PrimaryKey val id:Int? = null
 )
